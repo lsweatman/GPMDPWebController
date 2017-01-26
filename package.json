@@ -25,7 +25,8 @@
     "webpack": "^1.14.0"
   },
   "scripts": {
-    "build": "SET NODE_ENV=production && webpack -p",
+    "build production": "SET NODE_ENV=production && webpack -p",
+    "build development": "webpack --devtool sourcemap",
     "server": "http-server src/static"
   },
   "author": "Luke Sweatman",
