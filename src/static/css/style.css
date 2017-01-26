@@ -1,7 +1,7 @@
 div#media-buttons {
     overflow: hidden;
     height: 90px;
-    width: 276px;
+    width: 275px;
     background-color: #dadce7;
     margin: 2px 0;
     position: relative;
@@ -16,6 +16,19 @@ div.album-art-div>img{
     position: relative;
     -webkit-box-shadow: 5px 5px 15px 0 rgba(0, 0, 0, .2);
     box-shadow: 5px 5px 15px 0 rgba(0, 0, 0, .2);
+}
+
+/*TODO: Make prettier*/
+div.track-info {
+    width: 275px;
+    height: 55px;
+    font-size: 13px;
+    background-color: #dadce7;
+    color: black;
+    position: relative;
+    -webkit-box-shadow: 5px 5px 15px 0 rgba(0, 0, 0, .2);
+    box-shadow: 5px 5px 15px 0 rgba(0, 0, 0, .2);
+    white-space: pre-line;
 }
 
 .btn-circle {

@@ -5,6 +5,7 @@ import React from 'react';
 import ConnectButtons from './ConnectButtons';
 import AlbumArt from './albumArt';
 import MediaButtons from './mediaButtons';
+import TrackInfo from './TrackInfo';
 import addresses from '../data/addresses';
 
 const defaultAlbumURL = "https://play-music.gstatic.com/fe/f84d59cae890101cd2fb46668db2df56/default_album_med_2x.png"
@@ -16,6 +17,9 @@ export default class IndexPage extends React.Component {
         super();
         this.state = {
             playState: "glyphicon glyphicon-play",
+            trackName: "Track Name",
+            artistName: "Artist",
+            albumName: "Album Title",
             albumArtURL: defaultAlbumURL,
             connectionStatus: "Connect",
             /*person: this.props.person*/ //Future proofing for multiple connections
@@ -59,6 +63,9 @@ export default class IndexPage extends React.Component {
         this.connection.onclose = evt => {
             alert(`${addresses[0].name} Closed at ${addresses[0].ip}`); //switch to person
             this.setState({
+                trackName: "Track Name",
+                artistName: "Artist",
+                albumName: "Album Title",
                 albumArtURL: defaultAlbumURL,
                 playState: "glyphicon glyphicon-play",
                 connectionStatus: "Connect"
@@ -86,6 +93,9 @@ export default class IndexPage extends React.Component {
         //Track change handler to grab all track info
         if (jsonMessage.channel === 'track') {
             this.setState({
+                trackName: jsonMessage.payload.title,
+                artistName: jsonMessage.payload.artist,
+                albumName: jsonMessage.payload.album,
                 albumArtURL: jsonMessage.payload.albumArt
             });
         }
@@ -150,10 +160,16 @@ export default class IndexPage extends React.Component {
         return (
             <div className="single-person-div">
                 <AlbumArt albumArtURL={this.state.albumArtURL}/>
-                <MediaButtons rewindClicked={this.handleSkip.bind(this)}
+
+                <TrackInfo trackName={this.state.trackName}
+                           artistName={this.state.artistName}
+                           albumName={this.state.albumName}/>
+
+                <MediaButtons rewindClicked={this.handleRewind.bind(this)}
                               skipClicked={this.handleSkip.bind(this)}
                               playClicked={this.handlePlayPause.bind(this)}
                               playState={this.state.playState}/>
+
                 <ConnectButtons connectionClicked={this.handleConnectionToggle.bind(this)}
                                 connectionStatus={this.state.connectionStatus}/>
             </div>
