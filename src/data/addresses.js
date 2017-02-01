@@ -2,7 +2,7 @@ const addresses = [
 	{
 		'name': 'luke',
 		'ip': 'localhost',
-		'gpmdpAuth': '82884679-15a4-4789-b8f2-dff3a9975f6e',
+		'gpmdpAuth': '8a1d31f7-6384-4e20-bb0b-dee23e8a82d2',
 		'gpmdpEmail': 'sampleEmail@email.com',
 	},
 	{
