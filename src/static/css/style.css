@@ -1,3 +1,8 @@
+body {
+    background: none; !important;
+	background-color: transparent; !important;
+}
+
 div#media-buttons {
     overflow: hidden;
     height: 90px;
