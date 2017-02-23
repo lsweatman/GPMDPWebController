@@ -1,6 +1,5 @@
 node_modules/
 .idea/
 babel_cache/
-src/static/js/bundle.js
-src/static/js/bundle.js.map
+src/static/js/
 npm-debug.log/

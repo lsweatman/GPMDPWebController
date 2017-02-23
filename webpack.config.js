@@ -3,27 +3,25 @@
  */
 const webpack = require('webpack');
 const path = require('path');
-
-const APP_DIR = path.resolve(__dirname, 'src');
 const BUILD_DIR = path.resolve(__dirname, 'src/static/js');
 
 module.exports = {
-    entry: APP_DIR + '/app-client.js',
+    entry: {
+		js: './src/app-client.js',
+		vendor: ['react']
+	},
     output: {
         path: BUILD_DIR,
-        filename: 'bundle.js'
+        filename: '[name].bundle.js'
     },
     module: {
-        loaders: [{
-            test: path.join(__dirname, 'src'),
-            loader: ['babel-loader'],
-            query: {
-                cacheDirectory: 'babel_cache',
-                presets: ['react', 'es2015']
-            }
-        }]
+        rules: [{
+            test: /\.(js|jsx)$/,
+			exclude: /node_modules/,
+            use: ['babel-loader']
+        }],
     },
-    plugins: [
+    /*plugins: [
         new webpack.DefinePlugin({
             'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
         }),
@@ -36,5 +34,5 @@ module.exports = {
             beautify: false,
             dead_code: true
         })
-    ]
+    ]*/
 };
