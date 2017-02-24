@@ -8,7 +8,7 @@ import MediaButtons from './mediaButtons';
 import TrackInfo from './TrackInfo';
 import addresses from '../data/addresses';
 
-const defaultAlbumURL = "https://play-music.gstatic.com/fe/f84d59cae890101cd2fb46668db2df56/default_album_med_2x.png"
+const defaultAlbumURL = "./img/default.png";
 //var socket = io();
 
 export default class IndexPage extends React.Component {
