@@ -4,6 +4,10 @@ body {
 	background-color: transparent; !important;
 }
 
+div#connect-buttons {
+    -webkit-app-region: no-drag;
+}
+
 div#media-buttons {
     overflow: hidden;
     height: 90px;
