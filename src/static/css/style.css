@@ -4,10 +4,6 @@ body {
 	background-color: transparent; !important;
 }
 
-div#connect-buttons {
-    -webkit-app-region: no-drag;
-}
-
 div#media-buttons {
     overflow: hidden;
     height: 90px;
@@ -21,7 +17,6 @@ div#media-buttons {
 }
 
 div.album-art-div>img{
-	-webkit-app-region: drag;
     width: 275px;
     height: 275px;
     position: relative;
@@ -43,7 +38,6 @@ div.track-info {
 }
 
 .btn-circle {
-	-webkit-app-region: no-drag;
     width: 70px;
     height: 70px;
     margin-top: 10px;
@@ -69,6 +63,9 @@ div.track-info {
     color: #ffffff;
     text-align: center;
     outline: none;
+}
+.button-no-drag {
+    -webkit-app-region: no-drag;
 }
 
 .glyphicon {
