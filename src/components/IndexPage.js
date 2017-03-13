@@ -9,12 +9,15 @@ import TrackInfo from './TrackInfo';
 import addresses from '../data/addresses';
 
 const defaultAlbumURL = "./img/default.png";
-//var socket = io();
 
 export default class IndexPage extends React.Component {
 
     constructor(props) {
         super();
+        var storedIP = window.localStorage.getItem('lastIP');
+        if (storedIP === null || storedIP.length === 0) {
+            storedIP = "localhost";
+        }
         this.state = {
             playState: "glyphicon glyphicon-play",
             trackName: "Track Name",
@@ -22,13 +25,14 @@ export default class IndexPage extends React.Component {
             albumName: "Album Title",
             albumArtURL: defaultAlbumURL,
             connectionStatus: "Connect",
+            ipAddress: storedIP,
             /*person: this.props.person*/ //Future proofing for multiple connections
         };
     }
 
     componentDidMount(){
 
-        this.connection = new WebSocket(`ws://${addresses[0].ip}:5672`);
+        this.connection = new WebSocket(`ws://${this.state.ipAddress}:5672`);
 
         this.connection.onmessage = evt => {
             this.handleMessage(evt.data);
@@ -58,6 +62,14 @@ export default class IndexPage extends React.Component {
 
         this.connection.onerror = evt => {
             console.log(evt.data);
+            var newIP = window.prompt("Last stored IP not available. New IP:", "");
+            localStorage.setItem("lastIP", newIP);
+            this.setState({
+                ipAddress: newIP
+            });
+
+            //TODO: Still not this
+			this.componentDidMount();
         };
 
         this.connection.onclose = evt => {
