@@ -1,3 +1,9 @@
+body {
+	-webkit-app-region: drag;
+    background: none; !important;
+	background-color: transparent; !important;
+}
+
 div#media-buttons {
     overflow: hidden;
     height: 90px;
@@ -57,6 +63,9 @@ div.track-info {
     color: #ffffff;
     text-align: center;
     outline: none;
+}
+.button-no-drag {
+    -webkit-app-region: no-drag;
 }
 
 .glyphicon {
