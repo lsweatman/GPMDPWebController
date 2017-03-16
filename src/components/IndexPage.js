@@ -14,10 +14,13 @@ export default class IndexPage extends React.Component {
 
     constructor(props) {
         super();
-        var storedIP = window.localStorage.getItem('lastIP');
-        if (storedIP === null || storedIP.length === 0) {
-            storedIP = "localhost";
+        var userIP = localStorage.getItem("lastIP");
+
+        console.log(userIP);
+        if (userIP === null) {
+			userIP = "localhost";
         }
+
         this.state = {
             playState: "glyphicon glyphicon-play",
             trackName: "Track Name",
@@ -25,7 +28,7 @@ export default class IndexPage extends React.Component {
             albumName: "Album Title",
             albumArtURL: defaultAlbumURL,
             connectionStatus: "Connect",
-            ipAddress: storedIP,
+            ipAddress: userIP,
             /*person: this.props.person*/ //Future proofing for multiple connections
         };
     }
@@ -61,7 +64,6 @@ export default class IndexPage extends React.Component {
         };
 
         this.connection.onerror = evt => {
-            console.log(evt.data);
             var newIP = window.prompt("Last stored IP not available. New IP:", "");
             localStorage.setItem("lastIP", newIP);
             this.setState({
@@ -73,7 +75,7 @@ export default class IndexPage extends React.Component {
         };
 
         this.connection.onclose = evt => {
-            alert(`${addresses[0].name} Closed at ${addresses[0].ip}`); //switch to person
+            alert(`${addresses[0].name} Closed at ${this.state.ipAddress}`); //switch to person
             this.setState({
                 trackName: "Track Name",
                 artistName: "Artist",
@@ -128,7 +130,8 @@ export default class IndexPage extends React.Component {
             }
             else {
                 //TODO: get this to change a json file - use react-native-fs?
-                addresses[0].gpmdpAuth = jsonMessage.payload; //change to person
+                //addresses[0].gpmdpAuth = jsonMessage.payload; //change to person
+				localStorage.setItem("lastIP", this.state.ipAddress);
             }
         }
     }
