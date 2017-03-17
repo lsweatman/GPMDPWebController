@@ -3,3 +3,4 @@ node_modules/
 babel_cache/
 src/static/js/
 npm-debug.log/
+src/data

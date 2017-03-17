@@ -6,7 +6,6 @@ import ConnectButtons from './ConnectButtons';
 import AlbumArt from './albumArt';
 import MediaButtons from './mediaButtons';
 import TrackInfo from './TrackInfo';
-import addresses from '../data/addresses';
 
 const defaultAlbumURL = "./img/default.png";
 
@@ -43,7 +42,7 @@ export default class IndexPage extends React.Component {
 
         this.connection.onopen = evt => {
             var connectionJSON;
-            if (addresses[0].gpmdpAuth === ''){ //switch to person.Auth
+            if (localStorage.gpmdpAuth === null){ //switch to person.Auth
                 connectionJSON = {
                     "namespace": "connect",
                     "method": "connect",
@@ -54,7 +53,7 @@ export default class IndexPage extends React.Component {
                 connectionJSON = {
                     "namespace": "connect",
                     "method": "connect",
-                    "arguments": ["WebController", addresses[0].gpmdpAuth] //switch to person.Auth
+                    "arguments": ["WebController", localStorage.gpmdpAuth] //switch to person.Auth
                 };
             }
             this.connection.send(JSON.stringify(connectionJSON));
@@ -75,7 +74,7 @@ export default class IndexPage extends React.Component {
         };
 
         this.connection.onclose = evt => {
-            alert(`${addresses[0].name} Closed at ${this.state.ipAddress}`); //switch to person
+            alert(`Connection closed at ${this.state.ipAddress}`); //switch to person
             this.setState({
                 trackName: "Track Name",
                 artistName: "Artist",
@@ -117,8 +116,8 @@ export default class IndexPage extends React.Component {
         //Initial connection authentication handler
         if (jsonMessage.channel === 'connect' ) {
             if (jsonMessage.payload === 'CODE_REQUIRED') {
-                var fourDigitCode = prompt("Enter the 4 digit code (xxxx to abort)", "xxxx");
-                if (fourDigitCode === "xxxx") {
+                var fourDigitCode = prompt("Enter the 4 digit code (blank to abort)", "xxxx");
+                if (fourDigitCode === "") {
                     this.connection.close();
                 }
                 var connectionJSON = {
@@ -131,6 +130,7 @@ export default class IndexPage extends React.Component {
             else {
                 //TODO: get this to change a json file - use react-native-fs?
                 //addresses[0].gpmdpAuth = jsonMessage.payload; //change to person
+                localStorage.setItem("gpmdpAuth", jsonMessage.payload);
 				localStorage.setItem("lastIP", this.state.ipAddress);
             }
         }
