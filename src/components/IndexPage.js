@@ -167,6 +167,12 @@ export default class IndexPage extends React.Component {
 
         //TODO: Not this - could restate all websocket functions
         else {
+			var newIP = window.prompt("New IP:", "");
+			localStorage.setItem("lastIP", newIP);
+			this.setState({
+				ipAddress: newIP
+			});
+
             this.componentDidMount();
         }
     }
