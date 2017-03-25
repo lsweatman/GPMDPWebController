@@ -3,8 +3,8 @@
  */
 import React from 'react';
 import ConnectButtons from './ConnectButtons';
-import AlbumArt from './albumArt';
-import MediaButtons from './mediaButtons';
+import AlbumArt from './AlbumArt';
+import MediaButtons from './MediaButtons';
 import TrackInfo from './TrackInfo';
 
 const defaultAlbumURL = "./img/default.png";
