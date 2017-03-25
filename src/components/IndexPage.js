@@ -130,6 +130,13 @@ export default class IndexPage extends React.Component {
             else {
                 //TODO: get this to change a json file - use react-native-fs?
                 //addresses[0].gpmdpAuth = jsonMessage.payload; //change to person
+				var authJSON = {
+					"namespace": "connect",
+					"method": "connect",
+					"arguments": ["WebController", jsonMessage.payload]
+				};
+				this.connection.send(JSON.stringify(authJSON));
+
                 localStorage.setItem("gpmdpAuth", jsonMessage.payload);
 				localStorage.setItem("lastIP", this.state.ipAddress);
             }
