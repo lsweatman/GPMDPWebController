@@ -6,6 +6,7 @@ import ConnectButtons from './ConnectButtons';
 import AlbumArt from './AlbumArt';
 import MediaButtons from './MediaButtons';
 import TrackInfo from './TrackInfo';
+import VolumeSlider from './VolumeSlider';
 
 const defaultAlbumURL = "./img/default.png";
 
@@ -15,7 +16,6 @@ export default class IndexPage extends React.Component {
         super();
         var userIP = localStorage.getItem("lastIP");
 
-        console.log(userIP);
         if (userIP === null) {
 			userIP = "localhost";
         }
@@ -28,6 +28,7 @@ export default class IndexPage extends React.Component {
             albumArtURL: defaultAlbumURL,
             connectionStatus: "Connect",
             ipAddress: userIP,
+			volume: 0,
             /*person: this.props.person*/ //Future proofing for multiple connections
         };
     }
@@ -81,7 +82,8 @@ export default class IndexPage extends React.Component {
                 albumName: "Album Title",
                 albumArtURL: defaultAlbumURL,
                 playState: "glyphicon glyphicon-play",
-                connectionStatus: "Connect"
+                connectionStatus: "Connect",
+				volume: 0
             })
         };
     }
@@ -112,6 +114,12 @@ export default class IndexPage extends React.Component {
                 albumArtURL: jsonMessage.payload.albumArt
             });
         }
+
+        if (jsonMessage.channel === 'volume') {
+        	this.setState({
+        		volume: jsonMessage.payload
+			});
+		}
 
         //Initial connection authentication handler
         if (jsonMessage.channel === 'connect' ) {
@@ -184,10 +192,27 @@ export default class IndexPage extends React.Component {
         }
     }
 
+    handleVolumeChange(evt) {
+    	//TODO: Have this not only change on mouseup event
+    	var volumeJSON = {
+    		"namespace": "volume",
+			"method": "setVolume",
+			"arguments": [evt.target.value]
+		};
+    	this.connection.send(JSON.stringify(volumeJSON));
+
+    	this.setState({
+    		volume: evt.target.value
+		});
+	}
+
     render() {
         return (
             <div className="single-person-div">
                 <AlbumArt albumArtURL={this.state.albumArtURL}/>
+
+				<VolumeSlider pVolume={this.state.volume}
+							  onChange={this.handleVolumeChange.bind(this)}/>
 
                 <TrackInfo trackName={this.state.trackName}
                            artistName={this.state.artistName}

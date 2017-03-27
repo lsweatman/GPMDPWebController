@@ -1,5 +1,5 @@
 body {
-	-webkit-app-region: drag;
+	/*-webkit-app-region: drag;*/
     background: none; !important;
 	background-color: transparent; !important;
 }
@@ -20,21 +20,80 @@ div.album-art-div>img{
     width: 275px;
     height: 275px;
     position: relative;
-    -webkit-box-shadow: 5px 5px 15px 0 rgba(0, 0, 0, .2);
-    box-shadow: 5px 5px 15px 0 rgba(0, 0, 0, .2);
 }
 
 /*TODO: Make prettier*/
 div.track-info {
-    width: 275px;
     height: 55px;
     font-size: 13px;
-    background-color: #dadce7;
     color: black;
+    white-space: pre-line;
+}
+
+div.volume-slider {
+    height: 26px;
+    display: flex;
+    align-items: center;
+}
+
+/*Styling for the volume slider*/
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+
+    input[type=range]{
+        -webkit-appearance: none;
+    }
+
+    input[type=range]::-webkit-slider-runnable-track {
+        width: 200px;
+        height: 3px;
+        background: #404040;
+        border: none;
+        border-radius: 3px;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        border: none;
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        background: #337ab7;
+        margin-top: -6px;
+    }
+
+    input[type=range]:focus {
+        outline: none;
+    }
+}
+
+/** FF*/
+input[type="range"]::-moz-range-thumb {
+    border: none;
+    height: 16px;
+    width: 16px;
+    border-radius: 50%;
+    background-color: #337ab7;
+}
+input[type="range"]::-moz-range-track {
+    background-color: #404040;
+}
+/* IE*/
+input[type="range"]::-ms-fill-lower {
+    background-color: #43e5f7;
+}
+input[type="range"]::-ms-fill-upper {
+    background-color: #9a905d;
+}
+
+/*End volume slider styling*/
+
+.base-div {
+    width: 275px;
+    margin: 2px 2px;
     position: relative;
+    background-color: #dadce7;
     -webkit-box-shadow: 5px 5px 15px 0 rgba(0, 0, 0, .2);
     box-shadow: 5px 5px 15px 0 rgba(0, 0, 0, .2);
-    white-space: pre-line;
 }
 
 .btn-circle {
@@ -64,6 +123,7 @@ div.track-info {
     text-align: center;
     outline: none;
 }
+
 .button-no-drag {
     -webkit-app-region: no-drag;
 }
