@@ -12,132 +12,133 @@ const defaultAlbumURL = "./img/default.png";
 
 export default class IndexPage extends React.Component {
 
-    constructor(props) {
-        super();
-        var userIP = localStorage.getItem("lastIP");
+	constructor(props) {
+		super();
+		var userIP = localStorage.getItem("lastIP");
 
-        if (userIP === null) {
+		if (userIP === null) {
 			userIP = "localhost";
-        }
+		}
 
-        this.state = {
-            playState: "glyphicon glyphicon-play",
-            trackName: "Track Name",
-            artistName: "Artist",
-            albumName: "Album Title",
-            albumArtURL: defaultAlbumURL,
-            connectionStatus: "Connect",
-            ipAddress: userIP,
+		this.state = {
+			playState: "glyphicon glyphicon-play",
+			trackName: "Track Name",
+			artistName: "Artist",
+			albumName: "Album Title",
+			albumArtURL: defaultAlbumURL,
+			connectionStatus: "Connect",
+			ipAddress: userIP,
 			volume: 0,
-            /*person: this.props.person*/ //Future proofing for multiple connections
-        };
-    }
+			/*person: this.props.person*/ //Future proofing for multiple connections
+		};
+	}
 
-    componentDidMount(){
+	componentDidMount(){
 
-        this.connection = new WebSocket(`ws://${this.state.ipAddress}:5672`);
+		this.connection = new WebSocket(`ws://${this.state.ipAddress}:5672`);
 
-        this.connection.onmessage = evt => {
-            this.handleMessage(evt.data);
-        };
+		this.connection.onmessage = evt => {
+			this.handleMessage(evt.data);
+		};
 
-        this.connection.onopen = evt => {
-            var connectionJSON;
-            if (localStorage.gpmdpAuth === null){ //switch to person.Auth
-                connectionJSON = {
-                    "namespace": "connect",
-                    "method": "connect",
-                    "arguments": ["WebController"]
-                };
-            }
-            else {
-                connectionJSON = {
-                    "namespace": "connect",
-                    "method": "connect",
-                    "arguments": ["WebController", localStorage.gpmdpAuth] //switch to person.Auth
-                };
-            }
-            this.connection.send(JSON.stringify(connectionJSON));
-            this.setState({
-                connectionStatus: "Disconnect"
-            })
-        };
+		this.connection.onopen = evt => {
+			var connectionJSON;
+			if (localStorage.gpmdpAuth === null){ //switch to person.Auth
+				connectionJSON = {
+					"namespace": "connect",
+					"method": "connect",
+					"arguments": ["WebController"]
+				};
+			}
+			else {
+				connectionJSON = {
+					"namespace": "connect",
+					"method": "connect",
+					"arguments": ["WebController", localStorage.gpmdpAuth] //switch to person.Auth
+				};
+			}
+			this.connection.send(JSON.stringify(connectionJSON));
+			this.setState({
+				connectionStatus: "Disconnect"
+			})
+		};
 
-        this.connection.onerror = evt => {
-            var newIP = window.prompt("Last stored IP not available. New IP:", "");
-            localStorage.setItem("lastIP", newIP);
-            this.setState({
-                ipAddress: newIP
-            });
+		this.connection.onerror = evt => {
+			var newIP = window.prompt("Last stored IP not available. New IP:", "");
+			localStorage.setItem("lastIP", newIP);
+			this.setState({
+				ipAddress: newIP
+			});
 
-            //TODO: Still not this
+			//TODO: Still not this
 			this.componentDidMount();
-        };
+		};
 
-        this.connection.onclose = evt => {
-            alert(`Connection closed at ${this.state.ipAddress}`); //switch to person
-            this.setState({
-                trackName: "Track Name",
-                artistName: "Artist",
-                albumName: "Album Title",
-                albumArtURL: defaultAlbumURL,
-                playState: "glyphicon glyphicon-play",
-                connectionStatus: "Connect",
+		this.connection.onclose = evt => {
+			alert(`Connection closed at ${this.state.ipAddress}`); //switch to person
+			this.setState({
+				trackName: "Track Name",
+				artistName: "Artist",
+				albumName: "Album Title",
+				albumArtURL: defaultAlbumURL,
+				playState: "glyphicon glyphicon-play",
+				connectionStatus: "Connect",
 				volume: 0
-            })
-        };
-    }
+			})
+		};
+	}
 
-    handleMessage(data) {
-        let jsonMessage = JSON.parse(data);
+	handleMessage(data) {
+		let jsonMessage = JSON.parse(data);
 
-        //Playstate change handler to change glyphicons
-        if (jsonMessage.channel === 'playState') {
-            if (jsonMessage.payload === true) {
-                this.setState({
-                    playState: "glyphicon glyphicon-pause"
-                })
-            }
-            else {
-                this.setState({
-                    playState: "glyphicon glyphicon-play"
-                })
-            }
-        }
+		//Playstate change handler to change glyphicons
+		if (jsonMessage.channel === 'playState') {
+			if (jsonMessage.payload === true) {
+				this.setState({
+					playState: "glyphicon glyphicon-pause"
+				})
+			}
+			else {
+				this.setState({
+					playState: "glyphicon glyphicon-play"
+				})
+			}
+		}
 
-        //Track change handler to grab all track info
-        if (jsonMessage.channel === 'track') {
-            this.setState({
-                trackName: jsonMessage.payload.title,
-                artistName: jsonMessage.payload.artist,
-                albumName: jsonMessage.payload.album,
-                albumArtURL: jsonMessage.payload.albumArt
-            });
-        }
-
-        if (jsonMessage.channel === 'volume') {
-        	this.setState({
-        		volume: jsonMessage.payload
+		//Track change handler to grab all track info
+		if (jsonMessage.channel === 'track') {
+			this.setState({
+				trackName: jsonMessage.payload.title,
+				artistName: jsonMessage.payload.artist,
+				albumName: jsonMessage.payload.album,
+				albumArtURL: jsonMessage.payload.albumArt
 			});
 		}
 
-        //Initial connection authentication handler
-        if (jsonMessage.channel === 'connect' ) {
-            if (jsonMessage.payload === 'CODE_REQUIRED') {
-                var fourDigitCode = prompt("Enter the 4 digit code (blank to abort)", "xxxx");
-                if (fourDigitCode === "") {
-                    this.connection.close();
-                }
-                var connectionJSON = {
-                    "namespace": "connect",
-                    "method": "connect",
-                    "arguments": ["WebController", fourDigitCode]
-                };
-                this.connection.send(JSON.stringify(connectionJSON));
-            }
-            else {
-                //TODO: get this to change a json file - use react-native-fs?
-                //addresses[0].gpmdpAuth = jsonMessage.payload; //change to person
+		//Report back player volume changes
+		if (jsonMessage.channel === 'volume') {
+			this.setState({
+				volume: jsonMessage.payload
+			});
+		}
+
+		//Initial connection authentication handler
+		if (jsonMessage.channel === 'connect' ) {
+			if (jsonMessage.payload === 'CODE_REQUIRED') {
+				var fourDigitCode = prompt("Enter the 4 digit code (blank to abort)", "xxxx");
+				if (fourDigitCode === "") {
+					this.connection.close();
+				}
+				var connectionJSON = {
+					"namespace": "connect",
+					"method": "connect",
+					"arguments": ["WebController", fourDigitCode]
+				};
+				this.connection.send(JSON.stringify(connectionJSON));
+			}
+			else {
+				//TODO: get this to change a json file - use react-native-fs?
+				//addresses[0].gpmdpAuth = jsonMessage.payload; //change to person
 				var authJSON = {
 					"namespace": "connect",
 					"method": "connect",
@@ -145,87 +146,87 @@ export default class IndexPage extends React.Component {
 				};
 				this.connection.send(JSON.stringify(authJSON));
 
-                localStorage.setItem("gpmdpAuth", jsonMessage.payload);
+				localStorage.setItem("gpmdpAuth", jsonMessage.payload);
 				localStorage.setItem("lastIP", this.state.ipAddress);
-            }
-        }
-    }
+			}
+		}
+	}
 
-    handlePlayPause() {
-        const playJSON = {
-            "namespace": "playback",
-            "method": "playPause"
-        };
-        this.connection.send(JSON.stringify(playJSON));
-    }
+	handlePlayPause() {
+		const playJSON = {
+			"namespace": "playback",
+			"method": "playPause"
+		};
+		this.connection.send(JSON.stringify(playJSON));
+	}
 
-    handleSkip() {
-        var skipJSON = {
-            "namespace": "playback",
-            "method": "forward"
-        };
-        this.connection.send(JSON.stringify(skipJSON));
-    }
+	handleSkip() {
+		var skipJSON = {
+			"namespace": "playback",
+			"method": "forward"
+		};
+		this.connection.send(JSON.stringify(skipJSON));
+	}
 
-    handleRewind() {
-        const rewindJSON = {
-            "namespace": "playback",
-            "method": "rewind"
-        };
-        this.connection.send(JSON.stringify(rewindJSON));
-    }
+	handleRewind() {
+		const rewindJSON = {
+			"namespace": "playback",
+			"method": "rewind"
+		};
+		this.connection.send(JSON.stringify(rewindJSON));
+	}
 
-    handleConnectionToggle() {
-        if (this.state.connectionStatus === 'Disconnect') {
-            this.connection.close();
-        }
+	handleConnectionToggle() {
+		if (this.state.connectionStatus === 'Disconnect') {
+			this.connection.close();
+		}
 
-        //TODO: Not this - could restate all websocket functions
-        else {
+		//TODO: Not this - could restate all websocket functions
+		else {
 			var newIP = window.prompt("New IP:", "");
 			localStorage.setItem("lastIP", newIP);
 			this.setState({
 				ipAddress: newIP
 			});
 
-            this.componentDidMount();
-        }
-    }
+			this.componentDidMount();
+		}
+	}
 
-    handleVolumeChange(evt) {
-    	//TODO: Have this not only change on mouseup event
-    	var volumeJSON = {
-    		"namespace": "volume",
+	handleVolumeChange(evt) {
+		//TODO: Have this not only change on mouseup event
+		var volumeJSON = {
+			"namespace": "volume",
 			"method": "setVolume",
 			"arguments": [evt.target.value]
 		};
-    	this.connection.send(JSON.stringify(volumeJSON));
+		this.connection.send(JSON.stringify(volumeJSON));
 
-    	this.setState({
-    		volume: evt.target.value
+		this.setState({
+			volume: evt.target.value
 		});
 	}
 
-    render() {
-        return (
-            <div className="single-person-div">
-                <AlbumArt albumArtURL={this.state.albumArtURL}/>
+	render() {
+		return (
+			<div className="single-person-div">
+				<AlbumArt albumArtURL={this.state.albumArtURL}/>
 
 				<VolumeSlider pVolume={this.state.volume}
 							  onChange={this.handleVolumeChange.bind(this)}/>
 
-                <TrackInfo trackName={this.state.trackName}
-                           artistName={this.state.artistName}
-                           albumName={this.state.albumName}/>
+				<TrackInfo trackName={this.state.trackName}
+						   artistName={this.state.artistName}
+						   albumName={this.state.albumName}/>
 
-                <MediaButtons rewindClicked={this.handleRewind.bind(this)}
-                              skipClicked={this.handleSkip.bind(this)}
-                              playClicked={this.handlePlayPause.bind(this)}
-                              playState={this.state.playState}/>
+				<MediaButtons rewindClicked={this.handleRewind.bind(this)}
+							  skipClicked={this.handleSkip.bind(this)}
+							  playClicked={this.handlePlayPause.bind(this)}
+							  playState={this.state.playState}/>
 
-                <ConnectButtons connectionClicked={this.handleConnectionToggle.bind(this)}
-                                connectionStatus={this.state.connectionStatus}/>
-            </div>
-        );
-    }
+				<ConnectButtons connectionClicked={this.handleConnectionToggle.bind(this)}
+								connectionStatus={this.state.connectionStatus}/>
+			</div>
+		);
+	}
 }

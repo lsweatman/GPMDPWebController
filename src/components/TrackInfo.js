@@ -4,13 +4,13 @@
 import React from 'react';
 
 export default class TrackInfo extends React.Component {
-    render() {
-        return (
-            <div className="track-info base-div">
-                <div>{this.props.trackName}</div>
-                <div> {this.props.artistName}</div>
-                <div>{this.props.albumName}</div>
-            </div>
-        )
-    }
+	render() {
+		return (
+			<div className="track-info base-div">
+				<div>{this.props.trackName}</div>
+				<div> {this.props.artistName}</div>
+				<div>{this.props.albumName}</div>
+			</div>
+		)
+	}
 }
