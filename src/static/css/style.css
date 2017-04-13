@@ -28,6 +28,8 @@ div.track-info {
     font-size: 13px;
     color: black;
     white-space: pre-line;
+    text-align: center;
+    vertical-align: middle;
 }
 
 div.volume-slider {

@@ -2,7 +2,6 @@
  * Created by lukes on 1/21/2017.
  */
 import React from 'react';
-import ConnectButtons from './ConnectButtons';
 import AlbumArt from './AlbumArt';
 import MediaButtons from './MediaButtons';
 import TrackInfo from './TrackInfo';
@@ -14,11 +13,6 @@ export default class IndexPage extends React.Component {
 
 	constructor(props) {
 		super();
-		var userIP = localStorage.getItem("lastIP");
-
-		if (userIP === null) {
-			userIP = "localhost";
-		}
 
 		this.state = {
 			playState: "glyphicon glyphicon-play",
@@ -27,7 +21,6 @@ export default class IndexPage extends React.Component {
 			albumName: "Album Title",
 			albumArtURL: defaultAlbumURL,
 			connectionStatus: "Connect",
-			ipAddress: userIP,
 			volume: 0,
 			/*person: this.props.person*/ //Future proofing for multiple connections
 		};
@@ -35,7 +28,7 @@ export default class IndexPage extends React.Component {
 
 	componentDidMount(){
 
-		this.connection = new WebSocket(`ws://${this.state.ipAddress}:5672`);
+		this.connection = new WebSocket(`ws://${location.hostname}:5672`);
 
 		this.connection.onmessage = evt => {
 			this.handleMessage(evt.data);
@@ -137,8 +130,6 @@ export default class IndexPage extends React.Component {
 				this.connection.send(JSON.stringify(connectionJSON));
 			}
 			else {
-				//TODO: get this to change a json file - use react-native-fs?
-				//addresses[0].gpmdpAuth = jsonMessage.payload; //change to person
 				var authJSON = {
 					"namespace": "connect",
 					"method": "connect",
@@ -147,7 +138,6 @@ export default class IndexPage extends React.Component {
 				this.connection.send(JSON.stringify(authJSON));
 
 				localStorage.setItem("gpmdpAuth", jsonMessage.payload);
-				localStorage.setItem("lastIP", this.state.ipAddress);
 			}
 		}
 	}
@@ -223,9 +213,6 @@ export default class IndexPage extends React.Component {
 							  skipClicked={this.handleSkip.bind(this)}
 							  playClicked={this.handlePlayPause.bind(this)}
 							  playState={this.state.playState}/>
-
-				<ConnectButtons connectionClicked={this.handleConnectionToggle.bind(this)}
-								connectionStatus={this.state.connectionStatus}/>
 			</div>
 		);
 	}
