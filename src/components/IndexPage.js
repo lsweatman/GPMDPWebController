@@ -6,6 +6,7 @@ import AlbumArt from './AlbumArt';
 import MediaButtons from './MediaButtons';
 import TrackInfo from './TrackInfo';
 import VolumeSlider from './VolumeSlider';
+import Seekbar from './Seekbar';
 
 const defaultAlbumURL = "./img/default.png";
 
@@ -22,6 +23,7 @@ export default class IndexPage extends React.Component {
 			albumArtURL: defaultAlbumURL,
 			volume: 0,
 			totalTrackTime: "--:--",
+			currentTrackTime: "--:--",
 			/*person: this.props.person*/ //Future proofing for multiple connections
 		};
 	}
@@ -72,7 +74,9 @@ export default class IndexPage extends React.Component {
 				albumName: "Album Title",
 				albumArtURL: defaultAlbumURL,
 				playState: "glyphicon glyphicon-play",
-				volume: 0
+				volume: 0,
+				totalTrackTime: "--:--",
+				currentTrackTime: "--:--",
 			})
 		};
 	}
@@ -83,11 +87,19 @@ export default class IndexPage extends React.Component {
 		//Playstate change handler to change glyphicons
 		if (jsonMessage.channel === 'playState') {
 			if (jsonMessage.payload === true) {
+				
+				//If the track is playing, start grabbing current track time
+				var pingCurrentTime = setInterval(this.getCurrentTime, 500);
+				
 				this.setState({
 					playState: "glyphicon glyphicon-pause"
 				});
 			}
 			else {
+				
+				//Clear interval if the track is stopped
+				clearInterval(pingCurrentTime);
+				
 				this.setState({
 					playState: "glyphicon glyphicon-play"
 				});
@@ -96,6 +108,10 @@ export default class IndexPage extends React.Component {
 
 		//Track change handler to grab all track info
 		if (jsonMessage.channel === 'track') {
+			
+			//Ask for total track to suppress excess state changes
+			this.getTotalTime();
+			
 			this.setState({
 				trackName: jsonMessage.payload.title,
 				artistName: jsonMessage.payload.artist,
@@ -136,6 +152,52 @@ export default class IndexPage extends React.Component {
 				localStorage.setItem("gpmdpAuth", jsonMessage.payload);
 			}
 		}
+		
+		//Grab time for the seekbar
+		if (jsonMessage.channel === 'result') {
+			if (jsonMessage.requestID === 1) {
+				var milliseconds = jsonMessage.value;
+				milliseconds /= 1000;
+				var seconds = milliseconds % 60;
+				milliseconds /= 60;
+				var minutes = milliseconds % 60;
+				var formatTime = minutes + ":" + seconds;
+				
+				this.setState({
+					totalTrackTime: formatTime,
+				});
+			}	
+			else if (jsonMessage.requestID === 2) {
+				var milliseconds = jsonMessage.value;
+				milliseconds /= 1000;
+				var seconds = milliseconds % 60;
+				milliseconds /= 60;
+				var minutes = milliseconds % 60;
+				var formatTime = minutes + ":" + seconds;
+				
+				this.setState({
+					currentTrackTime: formatTime,
+				})
+			}
+		}
+	}
+
+	getCurrentTime() {
+		const askCurrentTime = {
+			"namespace": "playback",
+			"method": "getCurrentTime",
+			"requestID": 2
+		}
+		this.connection.send(JSON.stringify(askCurrentTime));
+	}
+
+	getTotalTime() {
+		const askTotalTime = {
+			"namespace": "playback",
+			"method": "getTotalTime",
+			"requestID": 1
+		}
+		this.connection.send(JSON.stringify(asktotalTime));
 	}
 
 	handlePlayPause() {
@@ -181,6 +243,9 @@ export default class IndexPage extends React.Component {
 			<div className="single-person-div">
 				<AlbumArt albumArtURL={this.state.albumArtURL}/>
 
+				<Seekbar currentTime={this.state.currentTrackTime}
+						 totalTime={this.state.totalTrackTime}/>
+				
 				<VolumeSlider pVolume={this.state.volume}
 							  onChange={this.handleVolumeChange.bind(this)}/>
 

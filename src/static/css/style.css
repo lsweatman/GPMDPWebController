@@ -38,6 +38,11 @@ div.volume-slider {
     align-items: center;
 }
 
+div.seekbar {
+    display: flex;
+    align-items: center;
+}
+
 /*Styling for the volume slider*/
 @media screen and (-webkit-min-device-pixel-ratio:0) {
 
