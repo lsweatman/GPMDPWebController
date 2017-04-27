@@ -20,8 +20,8 @@ export default class IndexPage extends React.Component {
 			artistName: "Artist",
 			albumName: "Album Title",
 			albumArtURL: defaultAlbumURL,
-			connectionStatus: "Connect",
 			volume: 0,
+			totalTrackTime: "--:--",
 			/*person: this.props.person*/ //Future proofing for multiple connections
 		};
 	}
@@ -51,9 +51,6 @@ export default class IndexPage extends React.Component {
 				};
 			}
 			this.connection.send(JSON.stringify(connectionJSON));
-			this.setState({
-				connectionStatus: "Disconnect"
-			})
 		};
 
 		this.connection.onerror = evt => {
@@ -68,14 +65,13 @@ export default class IndexPage extends React.Component {
 		};
 
 		this.connection.onclose = evt => {
-			alert(`Connection closed at ${this.state.ipAddress}`); //switch to person
+			alert(`Error at ${this.state.ipAddress}`); //switch to person
 			this.setState({
 				trackName: "Track Name",
 				artistName: "Artist",
 				albumName: "Album Title",
 				albumArtURL: defaultAlbumURL,
 				playState: "glyphicon glyphicon-play",
-				connectionStatus: "Connect",
 				volume: 0
 			})
 		};
@@ -89,12 +85,12 @@ export default class IndexPage extends React.Component {
 			if (jsonMessage.payload === true) {
 				this.setState({
 					playState: "glyphicon glyphicon-pause"
-				})
+				});
 			}
 			else {
 				this.setState({
 					playState: "glyphicon glyphicon-play"
-				})
+				});
 			}
 		}
 
@@ -164,23 +160,6 @@ export default class IndexPage extends React.Component {
 			"method": "rewind"
 		};
 		this.connection.send(JSON.stringify(rewindJSON));
-	}
-
-	handleConnectionToggle() {
-		if (this.state.connectionStatus === 'Disconnect') {
-			this.connection.close();
-		}
-
-		//TODO: Not this - could restate all websocket functions
-		else {
-			var newIP = window.prompt("New IP:", "");
-			localStorage.setItem("lastIP", newIP);
-			this.setState({
-				ipAddress: newIP
-			});
-
-			this.componentDidMount();
-		}
 	}
 
 	handleVolumeChange(evt) {
