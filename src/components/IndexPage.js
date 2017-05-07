@@ -86,19 +86,30 @@ export default class IndexPage extends React.Component {
 
 		//Playstate change handler to change glyphicons
 		if (jsonMessage.channel === 'playState') {
+			console.log(jsonMessage);
 			if (jsonMessage.payload === true) {
 				
 				//If the track is playing, start grabbing current track time
-				var pingCurrentTime = setInterval(this.getCurrentTime, 500);
+				console.log("Create Interval");
+				var pingCurrentTime = setInterval(() => {
+                    const askCurrentTime = {
+                        "namespace": "playback",
+                        "method": "getCurrentTime",
+                        "requestID": 2
+                    };
+                    this.connection.send(JSON.stringify(askCurrentTime));
+				}, 500);
 				
 				this.setState({
+					pingCurrentTime: pingCurrentTime,
 					playState: "glyphicon glyphicon-pause"
 				});
 			}
 			else {
 				
 				//Clear interval if the track is stopped
-				clearInterval(pingCurrentTime);
+                console.log("Clear Interval");
+				clearInterval(this.state.pingCurrentTime);
 				
 				this.setState({
 					playState: "glyphicon glyphicon-play"
@@ -110,7 +121,12 @@ export default class IndexPage extends React.Component {
 		if (jsonMessage.channel === 'track') {
 			
 			//Ask for total track to suppress excess state changes
-			this.getTotalTime();
+            const askTotalTime = {
+                "namespace": "playback",
+                "method": "getTotalTime",
+                "requestID": 1
+            };
+            this.connection.send(JSON.stringify(askTotalTime));
 			
 			this.setState({
 				trackName: jsonMessage.payload.title,
@@ -154,27 +170,31 @@ export default class IndexPage extends React.Component {
 		}
 		
 		//Grab time for the seekbar
-		if (jsonMessage.channel === 'result') {
+		if (jsonMessage.namespace === 'result') {
+
+           /* var milliseconds = jsonMessage.value;
+			 milliseconds /= 1000;
+			 var seconds = milliseconds % 60;
+			 milliseconds /= 60;
+			 var minutes = milliseconds / 60;*/
+			//TODO: Redo this
+            var milliseconds = parseInt((jsonMessage.value%1000)/100)
+                , seconds = parseInt((jsonMessage.value/1000)%60)
+                , minutes = parseInt((jsonMessage.value/(1000*60))%60)
+                , hours = parseInt((jsonMessage.value/(1000*60*60))%24);
+
+            hours = (hours < 10) ? "0" + hours : hours;
+            minutes = (minutes < 10) ? "0" + minutes : minutes;
+            seconds = (seconds < 10) ? "0" + seconds : seconds;
+
+            var formatTime = minutes + ":" + seconds;
+
 			if (jsonMessage.requestID === 1) {
-				var milliseconds = jsonMessage.value;
-				milliseconds /= 1000;
-				var seconds = milliseconds % 60;
-				milliseconds /= 60;
-				var minutes = milliseconds % 60;
-				var formatTime = minutes + ":" + seconds;
-				
 				this.setState({
 					totalTrackTime: formatTime,
 				});
 			}	
 			else if (jsonMessage.requestID === 2) {
-				var milliseconds = jsonMessage.value;
-				milliseconds /= 1000;
-				var seconds = milliseconds % 60;
-				milliseconds /= 60;
-				var minutes = milliseconds % 60;
-				var formatTime = minutes + ":" + seconds;
-				
 				this.setState({
 					currentTrackTime: formatTime,
 				})
@@ -187,7 +207,7 @@ export default class IndexPage extends React.Component {
 			"namespace": "playback",
 			"method": "getCurrentTime",
 			"requestID": 2
-		}
+		};
 		this.connection.send(JSON.stringify(askCurrentTime));
 	}
 
@@ -196,8 +216,8 @@ export default class IndexPage extends React.Component {
 			"namespace": "playback",
 			"method": "getTotalTime",
 			"requestID": 1
-		}
-		this.connection.send(JSON.stringify(asktotalTime));
+		};
+		this.connection.send(JSON.stringify(askTotalTime));
 	}
 
 	handlePlayPause() {

@@ -22,7 +22,7 @@
   },
   "scripts": {
     "build-p": "SET NODE_ENV=production && webpack -p",
-    "build-dev": "webpack --devtool sourcemap",
+    "build-dev": "webpack --devtool sourcemap && http-server src/static",
     "start-server": "http-server src/static",
     "start-electron": "electron ."
   },
