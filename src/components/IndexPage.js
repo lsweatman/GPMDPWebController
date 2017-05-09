@@ -14,7 +14,8 @@ export default class IndexPage extends React.Component {
 
 	constructor(props) {
 		super();
-
+		var totalMilli = 0;
+		var currentMilli = 0;
 		this.state = {
 			playState: "glyphicon glyphicon-play",
 			trackName: "Track Name",
@@ -24,6 +25,7 @@ export default class IndexPage extends React.Component {
 			volume: 0,
 			totalTrackTime: "--:--",
 			currentTrackTime: "--:--",
+			seekBarPosition: 0,
 			/*person: this.props.person*/ //Future proofing for multiple connections
 		};
 	}
@@ -190,13 +192,16 @@ export default class IndexPage extends React.Component {
             var formatTime = minutes + ":" + seconds;
 
 			if (jsonMessage.requestID === 1) {
+				this.totalMilli = jsonMessage.value;
 				this.setState({
 					totalTrackTime: formatTime,
 				});
 			}	
 			else if (jsonMessage.requestID === 2) {
+				this.currentMilli = jsonMessage.value;
 				this.setState({
 					currentTrackTime: formatTime,
+					seekBarPosition: this.currentMilli / this.totalMilli,
 				})
 			}
 		}
@@ -257,6 +262,15 @@ export default class IndexPage extends React.Component {
 			volume: evt.target.value
 		});
 	}
+	
+	handleSliderChange(evt) {
+		var setTimeJSON = {
+			"namespace": "playback",
+			"method": "setCurrentTime",
+			"arguments": [(evt.target.value / 100) * this.totalMilli]
+		}
+		this.connection.send(JSON.stringify(setTimeJSON));
+	}
 
 	render() {
 		return (
@@ -264,7 +278,9 @@ export default class IndexPage extends React.Component {
 				<AlbumArt albumArtURL={this.state.albumArtURL}/>
 
 				<Seekbar currentTime={this.state.currentTrackTime}
-						 totalTime={this.state.totalTrackTime}/>
+						 totalTime={this.state.totalTrackTime}
+						 sliderCurrent={this.state.seekBarPosition}
+						 onChange={this.handleSliderChange.bind(this)}/>
 				
 				<VolumeSlider pVolume={this.state.volume}
 							  onChange={this.handleVolumeChange.bind(this)}/>
