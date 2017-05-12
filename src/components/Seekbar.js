@@ -14,7 +14,8 @@ export default class Seekbar extends React.Component {
 				<div>{this.props.currentTime}</div>
 				<input 
 					type="range" 
-					value={this.props.sliderCurrent}/>
+					value={this.props.sliderCurrent}
+					onInput={this.props.onInput}/>
 				<div>{this.props.totalTime}</div>
 			</div>
 		)

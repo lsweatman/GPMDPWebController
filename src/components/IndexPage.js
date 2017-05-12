@@ -88,11 +88,10 @@ export default class IndexPage extends React.Component {
 
 		//Playstate change handler to change glyphicons
 		if (jsonMessage.channel === 'playState') {
-			console.log(jsonMessage);
+			//console.log("playstate hit");
 			if (jsonMessage.payload === true) {
 				
 				//If the track is playing, start grabbing current track time
-				console.log("Create Interval");
 				var pingCurrentTime = setInterval(() => {
                     const askCurrentTime = {
                         "namespace": "playback",
@@ -110,7 +109,6 @@ export default class IndexPage extends React.Component {
 			else {
 				
 				//Clear interval if the track is stopped
-                console.log("Clear Interval");
 				clearInterval(this.state.pingCurrentTime);
 				
 				this.setState({
@@ -201,7 +199,7 @@ export default class IndexPage extends React.Component {
 				this.currentMilli = jsonMessage.value;
 				this.setState({
 					currentTrackTime: formatTime,
-					seekBarPosition: this.currentMilli / this.totalMilli,
+					seekBarPosition: (this.currentMilli / this.totalMilli) * 100,
 				})
 			}
 		}
@@ -226,6 +224,7 @@ export default class IndexPage extends React.Component {
 	}
 
 	handlePlayPause() {
+		//console.log("playpause hit");
 		const playJSON = {
 			"namespace": "playback",
 			"method": "playPause"
@@ -257,10 +256,6 @@ export default class IndexPage extends React.Component {
 			"arguments": [evt.target.value]
 		};
 		this.connection.send(JSON.stringify(volumeJSON));
-
-		this.setState({
-			volume: evt.target.value
-		});
 	}
 	
 	handleSliderChange(evt) {
@@ -268,7 +263,7 @@ export default class IndexPage extends React.Component {
 			"namespace": "playback",
 			"method": "setCurrentTime",
 			"arguments": [(evt.target.value / 100) * this.totalMilli]
-		}
+		};
 		this.connection.send(JSON.stringify(setTimeJSON));
 	}
 
@@ -280,7 +275,7 @@ export default class IndexPage extends React.Component {
 				<Seekbar currentTime={this.state.currentTrackTime}
 						 totalTime={this.state.totalTrackTime}
 						 sliderCurrent={this.state.seekBarPosition}
-						 onChange={this.handleSliderChange.bind(this)}/>
+						 onInput={this.handleSliderChange.bind(this)}/>
 				
 				<VolumeSlider pVolume={this.state.volume}
 							  onChange={this.handleVolumeChange.bind(this)}/>
