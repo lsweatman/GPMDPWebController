@@ -12,7 +12,10 @@ export default class VolumeSlider extends React.Component {
 
 				<input
 					type="range"
-					value={this.props.pVolume} onChange={this.props.onChange}/>
+					value={this.props.pVolume}
+					onChange={this.props.onVolChange}
+					onMouseUp={this.props.onVolMouseUp}
+					onTouchEnd={this.props.onVolMouseUp}/>
 
 				<Glyphicon glyph="glyphicon glyphicon-volume-up"/>
 			</div>

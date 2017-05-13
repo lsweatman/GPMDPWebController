@@ -35,7 +35,20 @@ div.track-info {
 div.volume-slider {
     height: 26px;
     display: flex;
+    display: -webkit-flex;
     align-items: center;
+    -webkit-align-items: center;
+    justify-content: space-around;
+    -webkit-justify-content: space-around;
+}
+
+div.seek-bar {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-align-items: center;
+    align-items: center;
+    justify-content: space-around;
+    -webkit-justify-content: space-around;
 }
 
 /*Styling for the volume slider*/
