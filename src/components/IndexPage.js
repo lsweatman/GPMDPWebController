@@ -58,6 +58,8 @@ export default class IndexPage extends React.Component {
 				};
 			}
 			this.connection.send(JSON.stringify(connectionJSON));
+			this.getTotalTime();
+			this.getCurrentTime();
 		};
 
 		this.connection.onerror = evt => {
@@ -95,8 +97,6 @@ export default class IndexPage extends React.Component {
 				
 				//If the track is playing, start grabbing current track time
 				var pingCurrentTime = setInterval(() => {
-
-                    console.log("Interval pulse orig");
                     const askCurrentTime = {
                         "namespace": "playback",
                         "method": "getCurrentTime",
@@ -113,7 +113,6 @@ export default class IndexPage extends React.Component {
 			else {
 				
 				//Clear interval if the track is stopped
-				console.log("Clear interval");
 				clearInterval(this.state.pingCurrentTime);
 				
 				this.setState({
@@ -201,6 +200,7 @@ export default class IndexPage extends React.Component {
 				});
 			}	
 			else if (jsonMessage.requestID === 2) {
+
 				this.currentMilli = jsonMessage.value;
 				this.setState({
 					currentTrackTime: formatTime,
@@ -229,7 +229,6 @@ export default class IndexPage extends React.Component {
 	}
 
 	handlePlayPause() {
-		//console.log("playpause hit");
 		const playJSON = {
 			"namespace": "playback",
 			"method": "playPause"
@@ -253,14 +252,20 @@ export default class IndexPage extends React.Component {
 		this.connection.send(JSON.stringify(rewindJSON));
 	}
 
-	handleVolumeChange(evt) {
+	handleVolumeMouseUp(changeEvt) {
 		//Grabs current position and
 		var volumeJSON = {
 			"namespace": "volume",
 			"method": "setVolume",
-			"arguments": [evt.target.value]
+			"arguments": [changeEvt.target.value]
 		};
 		this.connection.send(JSON.stringify(volumeJSON));
+	}
+
+	handleVolumeChange(changeEvt) {
+        this.setState({
+            volume: changeEvt.target.value
+        });
 	}
 
 	//Reports final selection to GPMDP
@@ -275,9 +280,7 @@ export default class IndexPage extends React.Component {
 
 		//Restart the interval if the track is currently playing
         if (this.state.playState === "glyphicon glyphicon-pause") {
-            console.log("Restarting interval");
             var pingCurrentTime = setInterval(() => {
-                console.log("Interval pulse clone");
                 const askCurrentTime = {
                     "namespace": "playback",
                     "method": "getCurrentTime",
@@ -303,7 +306,6 @@ export default class IndexPage extends React.Component {
 	//Clears interval to suppress extra messages
 	//Con: Have to mouse up to change time but won't make GPMDP throw errors
 	handleSliderOnChange(evt) {
-		console.log("moving");
         clearInterval(this.state.pingCurrentTime);
         this.setState({
             seekBarPosition: evt.target.value
@@ -322,7 +324,8 @@ export default class IndexPage extends React.Component {
 						 onChange={this.handleSliderOnChange.bind(this)}/>
 				
 				<VolumeSlider pVolume={this.state.volume}
-							  onChange={this.handleVolumeChange.bind(this)}/>
+							  onVolChange={this.handleVolumeChange.bind(this)}
+							  onVolMouseUp={this.handleVolumeMouseUp.bind(this)}/>
 
 				<TrackInfo trackName={this.state.trackName}
 						   artistName={this.state.artistName}

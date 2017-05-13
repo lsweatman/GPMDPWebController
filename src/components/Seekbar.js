@@ -16,7 +16,7 @@ export default class Seekbar extends React.Component {
 					type="range" 
 					value={this.props.sliderCurrent}
 					onChange={this.props.onChange}
-					onMouseUp={this.props.onSliderChange}/>
+					onMouseUp={this.props.onMouseUp}/>
 				<div>{this.props.totalTime}</div>
 			</div>
 		)
