@@ -43,7 +43,8 @@ export default class IndexPage extends React.Component {
 
 		this.connection.onopen = evt => {
 			var connectionJSON;
-			if (localStorage.gpmdpAuth === null){ //switch to person.Auth
+			if (localStorage.gpmdpAuth === undefined){ //switch to person.Auth
+				console.log("null hit");
 				connectionJSON = {
 					"namespace": "connect",
 					"method": "connect",
@@ -58,8 +59,6 @@ export default class IndexPage extends React.Component {
 				};
 			}
 			this.connection.send(JSON.stringify(connectionJSON));
-			this.getTotalTime();
-			this.getCurrentTime();
 		};
 
 		this.connection.onerror = evt => {
@@ -93,25 +92,31 @@ export default class IndexPage extends React.Component {
 
 		//Playstate change handler to change glyphicons
 		if (jsonMessage.channel === 'playState') {
+
 			if (jsonMessage.payload === true) {
-				
-				//If the track is playing, start grabbing current track time
-				var pingCurrentTime = setInterval(() => {
-                    const askCurrentTime = {
-                        "namespace": "playback",
-                        "method": "getCurrentTime",
-                        "requestID": 2
-                    };
-                    this.connection.send(JSON.stringify(askCurrentTime));
-				}, 500);
+				//Won't work if user isn't authenticated
+				if (localStorage.gpmdpAuth !== undefined) {
+
+                    //If the track is playing, start grabbing current track time
+                    var pingCurrentTime = setInterval(() => {
+                        console.log("Set interval orig hit");
+                        const askCurrentTime = {
+                            "namespace": "playback",
+                            "method": "getCurrentTime",
+                            "requestID": 2
+                        };
+                        this.connection.send(JSON.stringify(askCurrentTime));
+                    }, 500);
+                    this.setState({
+						pingCurrentTime: pingCurrentTime
+					});
+                }
 				
 				this.setState({
-					pingCurrentTime: pingCurrentTime,
 					playState: "glyphicon glyphicon-pause"
 				});
 			}
 			else {
-				
 				//Clear interval if the track is stopped
 				clearInterval(this.state.pingCurrentTime);
 				
@@ -123,15 +128,18 @@ export default class IndexPage extends React.Component {
 
 		//Track change handler to grab all track info
 		if (jsonMessage.channel === 'track') {
-			
+
 			//Ask for total track to suppress excess state changes
-            const askTotalTime = {
-                "namespace": "playback",
-                "method": "getTotalTime",
-                "requestID": 1
-            };
-            this.connection.send(JSON.stringify(askTotalTime));
-			
+			if (localStorage.gpmdpAuth !== undefined) {
+                console.log("Track: hit");
+                const askTotalTime = {
+                    "namespace": "playback",
+                    "method": "getTotalTime",
+                    "requestID": 1
+                };
+                this.connection.send(JSON.stringify(askTotalTime));
+            }
+
 			this.setState({
 				trackName: jsonMessage.payload.title,
 				artistName: jsonMessage.payload.artist,
@@ -149,8 +157,10 @@ export default class IndexPage extends React.Component {
 
 		//Initial connection authentication handler
 		if (jsonMessage.channel === 'connect' ) {
+			//If the client doesn't have a code already
 			if (jsonMessage.payload === 'CODE_REQUIRED') {
-				var fourDigitCode = prompt("Enter the 4 digit code (blank to abort)", "xxxx");
+				console.log("hit");
+				var fourDigitCode = prompt("Enter the 4 digit code (blank to abort)", "");
 				if (fourDigitCode === "") {
 					this.connection.close();
 				}
@@ -161,6 +171,8 @@ export default class IndexPage extends React.Component {
 				};
 				this.connection.send(JSON.stringify(connectionJSON));
 			}
+
+			//If the user successfully gets a key back
 			else {
 				var authJSON = {
 					"namespace": "connect",
@@ -170,35 +182,43 @@ export default class IndexPage extends React.Component {
 				this.connection.send(JSON.stringify(authJSON));
 
 				localStorage.setItem("gpmdpAuth", jsonMessage.payload);
+                console.log("Double time hit");
+                this.getTotalTime();
+                this.getCurrentTime();
 			}
 		}
 		
 		//Grab time for the seekbar
 		if (jsonMessage.namespace === 'result') {
 
-           /* var milliseconds = jsonMessage.value;
-			 milliseconds /= 1000;
-			 var seconds = milliseconds % 60;
-			 milliseconds /= 60;
-			 var minutes = milliseconds / 60;*/
-			//TODO: Redo this
-            var milliseconds = parseInt((jsonMessage.value%1000)/100)
-                , seconds = parseInt((jsonMessage.value/1000)%60)
-                , minutes = parseInt((jsonMessage.value/(1000*60))%60)
-                , hours = parseInt((jsonMessage.value/(1000*60*60))%24);
+			//Parse time
+            var milliseconds = parseInt((jsonMessage.value%1000)/100);
+            var seconds = parseInt((jsonMessage.value/1000)%60);
+            var minutes = parseInt((jsonMessage.value/(1000*60))%60);
+            var hours = parseInt((jsonMessage.value/(1000*60*60))%24);
 
             hours = (hours < 10) ? "0" + hours : hours;
             minutes = (minutes < 10) ? "0" + minutes : minutes;
             seconds = (seconds < 10) ? "0" + seconds : seconds;
 
-            var formatTime = minutes + ":" + seconds;
+            //Change the format based on song length
+            var formatTime;
+            if (hours >= 1) {
+                formatTime = hours + ":" + minutes + ":" + seconds;
+			}
+			else {
+                formatTime = minutes + ":" + seconds;
+			}
 
+			//Takes return JSON from total time request
 			if (jsonMessage.requestID === 1) {
 				this.totalMilli = jsonMessage.value;
 				this.setState({
 					totalTrackTime: formatTime,
 				});
-			}	
+			}
+
+            //Takes return JSON from current time request
 			else if (jsonMessage.requestID === 2) {
 
 				this.currentMilli = jsonMessage.value;
@@ -252,24 +272,27 @@ export default class IndexPage extends React.Component {
 		this.connection.send(JSON.stringify(rewindJSON));
 	}
 
-	handleVolumeMouseUp(changeEvt) {
-		//Grabs current position and
+	//For when the mouse up event is fired
+	//Used to suppress tons of messages back to GPMDP
+	handleVolumeMouseUp(evt) {
 		var volumeJSON = {
 			"namespace": "volume",
 			"method": "setVolume",
-			"arguments": [changeEvt.target.value]
+			"arguments": [evt.target.value]
 		};
 		this.connection.send(JSON.stringify(volumeJSON));
 	}
 
-	handleVolumeChange(changeEvt) {
+	handleVolumeChange(evt) {
+        console.log("Slider Change hit");
         this.setState({
-            volume: changeEvt.target.value
+            volume: evt.target.value
         });
 	}
 
 	//Reports final selection to GPMDP
 	handleSliderMouseUp(evt) {
+		console.log("slider mouse up");
 		//Set Player time position
 		var setTimeJSON = {
 			"namespace": "playback",
@@ -306,6 +329,7 @@ export default class IndexPage extends React.Component {
 	//Clears interval to suppress extra messages
 	//Con: Have to mouse up to change time but won't make GPMDP throw errors
 	handleSliderOnChange(evt) {
+		console.log("Slider Change hit");
         clearInterval(this.state.pingCurrentTime);
         this.setState({
             seekBarPosition: evt.target.value
